@@ -4,204 +4,69 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Team Mirage OT Shiny Dex</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500&display=swap" rel="stylesheet">
     <style>
-        /* Same styles as before */
         body {
-            font-family: 'Poppins', sans-serif;
+            font-family: Arial, sans-serif;
             background-color: #2d2d2d;
             color: white;
-            margin: 0;
             padding: 20px;
         }
         .container {
-            max-width: 800px;
+            max-width: 600px;
             margin: auto;
             background: rgba(0, 0, 0, 0.8);
-            border-radius: 16px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-            padding: 30px;
-            display: flex;
-            flex-direction: column;
+            border-radius: 10px;
+            padding: 20px;
         }
         .header {
             text-align: center;
             margin-bottom: 20px;
-            border-bottom: 2px solid #444;
-            padding-bottom: 10px;
         }
         .header h1 {
-            font-size: 2.5em;
+            font-size: 24px;
             color: #ffcb05;
         }
-        .pokemon-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-        }
         .pokemon-item {
-            background: #444;
-            padding: 10px;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 120px;
-            text-align: center;
-            position: relative;
-        }
-        .pokemon-item img {
-            width: 80px;
-            height: 80px;
-            margin-bottom: 5px;
-        }
-        .pokemon-name {
-            font-size: 1.2em;
-            margin-bottom: 5px;
-        }
-        .pokemon-owner {
-            font-size: 0.9em;
-            color: #bbb;
-        }
-        .remove-btn {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background-color: #f44336;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 5px;
-            cursor: pointer;
-            font-size: 0.8em;
-        }
-        .remove-btn:hover {
-            background-color: #d32f2f;
-        }
-        .add-section {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        .add-section input {
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            border: none;
-            background-color: #444;
-            color: white;
-        }
-        .add-section button {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 8px;
-            background-color: #ffbb33;
-            color: white;
-            cursor: pointer;
-        }
-        .add-section button:hover {
-            background-color: #ff9900;
+            margin: 10px 0;
+            font-size: 18px;
         }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <div class="header">
-        <h1>Team Mirage OT Shiny Dex</h1>
+    <div class="container">
+        <div class="header">
+            <h1>Team Mirage OT Shiny Dex</h1>
+        </div>
+        <div id="pokemonList">
+            <!-- Pokémon list will appear here -->
+        </div>
     </div>
-    
-    <ul class="pokemon-list" id="pokemonList">
-        <!-- Pokémon will be dynamically added here -->
-    </ul>
 
-    <div class="add-section">
-        <input type="text" id="pokemonName" placeholder="Enter Pokémon name">
-        <input type="text" id="pokemonOwner" placeholder="Enter owner name">
-        <input type="text" id="pokemonImage" placeholder="Enter GIF URL (optional)">
-        <button id="addPokemonBtn">Add Pokémon</button>
-    </div>
-</div>
+    <script>
+        // Pokémon data
+        const pokemons = [
+            { owner: 'SnowyGun', name: 'The mons' },
+            { owner: 'Jane', name: 'The mons' },
+            { owner: 'Frost', name: 'The mons' }
+        ];
 
-<script>
-    const pokemonList = document.getElementById('pokemonList');
-    const addPokemonBtn = document.getElementById('addPokemonBtn');
-    const pokemonName = document.getElementById('pokemonName');
-    const pokemonOwner = document.getElementById('pokemonOwner');
-    const pokemonImage = document.getElementById('pokemonImage');
+        const pokemonListDiv = document.getElementById('pokemonList');
 
-    // Load Pokémon from Local Storage
-    const loadPokemons = () => {
-        const pokemons = JSON.parse(localStorage.getItem('pokemons')) || [];
-        return pokemons;
-    };
+        // Function to render Pokémon list
+        const renderPokemons = () => {
+            pokemons.forEach(pokemon => {
+                const div = document.createElement('div');
+                div.classList.add('pokemon-item');
+                div.innerHTML = `
+                    ${pokemon.owner}<br>
+                    ${pokemon.name}
+                `;
+                pokemonListDiv.appendChild(div);
+            });
+        };
 
-    // Save Pokémon to Local Storage
-    const savePokemons = (pokemons) => {
-        localStorage.setItem('pokemons', JSON.stringify(pokemons));
-    };
-
-    // Render Pokémon List
-    const renderPokemons = () => {
-        const pokemons = loadPokemons();
-        pokemonList.innerHTML = ''; // Clear current list
-
-        pokemons.forEach((pokemon, index) => {
-            const li = document.createElement('li');
-            li.classList.add('pokemon-item');
-            li.innerHTML = `
-                <div class="pokemon-name">${pokemon.name}</div>
-                ${
-                    pokemon.image
-                        ? `<img src="${pokemon.image}" alt="${pokemon.name}">`
-                        : '<div style="width:80px;height:80px;background:#555;border-radius:50%;"></div>'
-                }
-                <div class="pokemon-owner">${pokemon.owner}</div>
-                <button class="remove-btn" onclick="removePokemon(${index})">Remove</button>
-            `;
-            pokemonList.appendChild(li);
-        });
-    };
-
-    // Add New Pokémon
-    const addPokemon = () => {
-        const name = pokemonName.value.trim();
-        const owner = pokemonOwner.value.trim();
-        const image = pokemonImage.value.trim();
-
-        if (!name || !owner) {
-            alert("Please provide both a Pokémon name and an owner.");
-            return;
-        }
-
-        const pokemons = loadPokemons();
-        pokemons.push({ name, owner, image });
-        savePokemons(pokemons);
-
-        pokemonName.value = '';
-        pokemonOwner.value = '';
-        pokemonImage.value = '';
+        // Render the list
         renderPokemons();
-    };
-
-    // Remove Pokémon
-    const removePokemon = (index) => {
-        const pokemons = loadPokemons();
-        pokemons.splice(index, 1); // Remove the Pokémon at the given index
-        savePokemons(pokemons);
-        renderPokemons();
-    };
-
-    // Event Listener for Add Button
-    addPokemonBtn.addEventListener('click', addPokemon);
-
-    // Initial Render
-    renderPokemons();
-</script>
-
+    </script>
 </body>
 </html>
