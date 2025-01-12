@@ -32,12 +32,28 @@
         }
         .owner-section {
             margin-top: 20px;
+            border-bottom: 2px solid #444;
+            padding-bottom: 10px;
+            padding-top: 10px;
         }
         .owner-name {
             font-size: 1.5em;
             font-weight: bold;
             color: #ffcb05;
             margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .owner-name button {
+            background-color: #ffbb33;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .owner-name button:hover {
+            background-color: #ff9900;
         }
         .pokemon-item {
             display: flex;
@@ -114,7 +130,7 @@
 </div>
 
 <script>
-    const password = "Hail-Team-Marige"; // Password set here
+    const password = "Mirage123"; // Password set here
 
     const pokemonList = document.getElementById('pokemonList');
     const addPokemonBtn = document.getElementById('addPokemonBtn');
@@ -122,22 +138,67 @@
     const pokemonName = document.getElementById('pokemonName');
     const pokemonImage = document.getElementById('pokemonImage');
 
-    const entries = {};
+    // Load entries from local storage or initialize with default values
+    const entries = JSON.parse(localStorage.getItem('pokemonEntries')) || {
+        "SnowyGun(Leader)": [
+            { name: "Poochyena", image: "https://img.pokemondb.net/sprites/black-white/anim/shiny/poochyena.gif" },
+            { name: "Smeargle", image: "https://img.pokemondb.net/sprites/black-white/anim/shiny/smeargle.gif" }
+        ],
+        "HeyitsJippy": [
+            { name: "Luvdisc", image: "https://img.pokemondb.net/sprites/black-white/anim/shiny/luvdisc.gif" },
+            { name: "SlowBro", image: "https://img.pokemondb.net/sprites/black-white/anim/shiny/slowbro.gif" },
+            { name: "Rapidash", image: "https://img.pokemondb.net/sprites/black-white/anim/shiny/rapidash.gif" }
+        ],
+        "Drakilia": [
+            { name: "Fearow", image: "https://img.pokemondb.net/sprites/black-white/anim/shiny/fearow.gif" },
+            { name: "Rattata", image: "https://img.pokemondb.net/sprites/black-white/anim/shiny/rattata.gif" },
+            { name: "Haxorus", image: "https://img.pokemondb.net/sprites/black-white/anim/shiny/haxorus.gif" }
+        ],
+        "Pyakurel": [
+            { name: "Hariyama", image: "https://img.pokemondb.net/sprites/black-white/anim/shiny/hariyama.gif" }
+        ],
+        "NessTwink": [
+            { name: "Raticate", image: "https://img.pokemondb.net/sprites/black-white/anim/shiny/raticate.gif" }
+        ]
+    };
+
+    const saveEntries = () => {
+        localStorage.setItem('pokemonEntries', JSON.stringify(entries));
+    };
 
     const renderEntries = () => {
-        pokemonList.innerHTML = ''; // Clear current list
+        pokemonList.innerHTML = '';
 
         Object.keys(entries).forEach(owner => {
             const ownerSection = document.createElement('div');
             ownerSection.classList.add('owner-section');
 
-            // Owner Name
             const ownerName = document.createElement('div');
             ownerName.classList.add('owner-name');
-            ownerName.textContent = owner;
+
+            const ownerText = document.createElement('span');
+            ownerText.textContent = owner;
+            ownerName.appendChild(ownerText);
+
+            const editButton = document.createElement('button');
+            editButton.textContent = 'Edit Name';
+            editButton.addEventListener('click', () => {
+                const enteredPassword = prompt("Enter password to edit owner name:");
+                if (enteredPassword !== password) {
+                    alert("Incorrect password. Access denied.");
+                    return;
+                }
+                const newName = prompt("Enter new owner name:", owner);
+                if (newName) {
+                    entries[newName] = entries[owner];
+                    delete entries[owner];
+                    saveEntries(); // Save changes
+                    renderEntries();
+                }
+            });
+            ownerName.appendChild(editButton);
             ownerSection.appendChild(ownerName);
 
-            // Pokémon List
             entries[owner].forEach((pokemon, index) => {
                 const pokemonItem = document.createElement('div');
                 pokemonItem.classList.add('pokemon-item');
@@ -155,16 +216,22 @@
             pokemonList.appendChild(ownerSection);
         });
 
-        // Add event listeners for "Remove" buttons
         const removeButtons = document.querySelectorAll('.remove-btn');
         removeButtons.forEach(button => {
             button.addEventListener('click', () => {
+                const enteredPassword = prompt("Enter password to remove Pokémon:");
+                if (enteredPassword !== password) {
+                    alert("Incorrect password. Access denied.");
+                    return;
+                }
+
                 const owner = button.getAttribute('data-owner');
                 const index = button.getAttribute('data-index');
-                entries[owner].splice(index, 1); // Remove Pokémon
+                entries[owner].splice(index, 1);
                 if (entries[owner].length === 0) {
-                    delete entries[owner]; // Remove owner if no Pokémon left
+                    delete entries[owner];
                 }
+                saveEntries(); // Save changes
                 renderEntries();
             });
         });
@@ -190,15 +257,17 @@
             entries[owner] = [];
         }
         entries[owner].push({ name, image });
+        saveEntries(); // Save changes
+        renderEntries();
 
         pokemonOwner.value = '';
         pokemonName.value = '';
         pokemonImage.value = '';
-        renderEntries();
     };
 
     addPokemonBtn.addEventListener('click', addEntry);
+    
+    renderEntries();
 </script>
-
 </body>
 </html>
