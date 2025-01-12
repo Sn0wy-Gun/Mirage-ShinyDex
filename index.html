@@ -114,6 +114,8 @@
 </div>
 
 <script>
+    const password = "Hail-Team-Marige"; // Password set here
+
     const pokemonList = document.getElementById('pokemonList');
     const addPokemonBtn = document.getElementById('addPokemonBtn');
     const pokemonOwner = document.getElementById('pokemonOwner');
@@ -169,6 +171,12 @@
     };
 
     const addEntry = () => {
+        const enteredPassword = prompt("Enter password to add Pokémon:");
+        if (enteredPassword !== password) {
+            alert("Incorrect password. Access denied.");
+            return;
+        }
+
         const owner = pokemonOwner.value.trim();
         const name = pokemonName.value.trim();
         const image = pokemonImage.value.trim();
