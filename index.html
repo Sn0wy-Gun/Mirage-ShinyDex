@@ -35,6 +35,7 @@
             border-bottom: 2px solid #444;
             padding-bottom: 10px;
             padding-top: 10px;
+            cursor: move; /* Indicates draggability of owner section */
         }
         .owner-name {
             font-size: 1.5em;
@@ -169,9 +170,10 @@
     const renderEntries = () => {
         pokemonList.innerHTML = '';
 
-        Object.keys(entries).forEach(owner => {
+        Object.keys(entries).forEach((owner, ownerIndex) => {
             const ownerSection = document.createElement('div');
             ownerSection.classList.add('owner-section');
+            ownerSection.setAttribute('draggable', 'true');
 
             const ownerName = document.createElement('div');
             ownerName.classList.add('owner-name');
@@ -192,48 +194,74 @@
                 if (newName) {
                     entries[newName] = entries[owner];
                     delete entries[owner];
-                    saveEntries(); // Save changes
+                    saveEntries(); 
                     renderEntries();
                 }
             });
             ownerName.appendChild(editButton);
             ownerSection.appendChild(ownerName);
 
-            entries[owner].forEach((pokemon, index) => {
+            entries[owner].forEach(pokemon => {
                 const pokemonItem = document.createElement('div');
                 pokemonItem.classList.add('pokemon-item');
-
+                
                 pokemonItem.innerHTML = `
                     <div>
                         <img src="${pokemon.image}" alt="${pokemon.name}">
                         <span>${pokemon.name}</span>
                     </div>
-                    <button class="remove-btn" data-owner="${owner}" data-index="${index}">Remove</button>
+                    <button class="remove-btn">Remove</button>
                 `;
+
+                // Add remove button functionality
+                const removeButton = pokemonItem.querySelector('.remove-btn');
+                removeButton.addEventListener('click', () => {
+                    const enteredPassword = prompt("Enter password to remove Pokémon:");
+                    if (enteredPassword !== password) {
+                        alert("Incorrect password. Access denied.");
+                        return;
+                    }
+                    const index = entries[owner].indexOf(pokemon);
+                    entries[owner].splice(index, 1);
+                    if (entries[owner].length === 0) {
+                        delete entries[owner];
+                    }
+                    saveEntries();
+                    renderEntries();
+                });
+
                 ownerSection.appendChild(pokemonItem);
             });
 
-            pokemonList.appendChild(ownerSection);
-        });
+            ownerSection.addEventListener('dragstart', (event) => {
+                event.dataTransfer.setData('text/plain', owner);
+            });
 
-        const removeButtons = document.querySelectorAll('.remove-btn');
-        removeButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const enteredPassword = prompt("Enter password to remove Pokémon:");
-                if (enteredPassword !== password) {
-                    alert("Incorrect password. Access denied.");
-                    return;
-                }
+            ownerSection.addEventListener('dragover', (event) => {
+                event.preventDefault();
+            });
 
-                const owner = button.getAttribute('data-owner');
-                const index = button.getAttribute('data-index');
-                entries[owner].splice(index, 1);
-                if (entries[owner].length === 0) {
+            ownerSection.addEventListener('drop', (event) => {
+                event.preventDefault();
+                const draggedOwner = event.dataTransfer.getData('text/plain');
+                const draggedOwnerIndex = Object.keys(entries).indexOf(draggedOwner);
+                const targetOwnerIndex = Object.keys(entries).indexOf(owner);
+                
+                // Move the owner section
+                if (draggedOwnerIndex < targetOwnerIndex) {
+                    const temp = entries[draggedOwner];
+                    delete entries[draggedOwner];
+                    entries[draggedOwner] = temp; // Place it above the target
+                } else if (draggedOwnerIndex > targetOwnerIndex) {
+                    const temp = entries[owner];
                     delete entries[owner];
+                    entries[owner] = temp; // Place it below the original owner
                 }
-                saveEntries(); // Save changes
+                saveEntries();
                 renderEntries();
             });
+
+            pokemonList.appendChild(ownerSection);
         });
     };
 
@@ -257,7 +285,7 @@
             entries[owner] = [];
         }
         entries[owner].push({ name, image });
-        saveEntries(); // Save changes
+        saveEntries();
         renderEntries();
 
         pokemonOwner.value = '';
